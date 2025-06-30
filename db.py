@@ -10,7 +10,7 @@ Session = scoped_session(sessionmaker(bind=engine))
 
 Base = declarative_base()
 
-user_subject_association = Table(
+JoinTS = Table(
     "joinedTS",
     Base.metadata,
     Column("u_id", Integer, ForeignKey("users.id"), primary_key=True),
@@ -31,9 +31,12 @@ class User(Base):
     busy: Mapped[int] = mapped_column(Integer, nullable=False)#0 - не занят, 1 - занят как ученик, 2 - занят как препод, 12 - занят и как препод и как ученик
 
 
-    items: Mapped[List["Subject"]] = relationship(
-        secondary=user_subject_association,
-        back_populates="users"
+    subjects: Mapped[List["Subject"]] = relationship(
+        secondary=JoinTS,
+        back_populates='users',
+        cascade='save-update, merge',
+        lazy='select'
+
     )
 
 
@@ -44,8 +47,9 @@ class Subject(Base):
      subject: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
      users: Mapped[List["User"]] = relationship(
-        secondary=user_subject_association,
-        back_populates="subjects"
+        secondary=JoinTS,
+        back_populates='subjects',
+        viewonly=True
     )
 
 
@@ -76,10 +80,20 @@ def add_subject(subj):
         session.commit()
         print(f"Предмет {subj} добавлен")
 
+
+def add_join(user_id, subject_id):
+    with Session() as session:
+        user = session.get(User, user_id)
+        subj = session.get(Subject, subject_id)
+        user.subjects.append(subj)
+        session.commit()
+        print(f"Связь между пользователем: {user.name} и предметом {user.subjects} добавлена")
+
 create_db_and_tables()
 try:
-    #add_subject('geometry')
+    add_subject('english')
     #add_user(54321, None, 'Raz', 10)
+    add_join(54321, 3)
     print('arr')
 except sqlalchemy.exc.IntegrityError:
     print('unic fail')

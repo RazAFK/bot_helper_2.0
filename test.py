@@ -1,2 +1,2 @@
-import datetime
-print(type(datetime.datetime.now()))
+for i in range(31, 61):
+    print(f'{i}. ')
