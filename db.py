@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Table, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Table, DateTime, Boolean, select
 from sqlalchemy.orm import relationship, sessionmaker, declarative_base, Mapped, mapped_column, scoped_session
 import sqlalchemy
 from datetime import datetime, timezone
@@ -84,14 +84,15 @@ def add_subject(subj):
 def add_join(user_id, subject_id):
     with Session() as session:
         user = session.get(User, user_id)
+        user = session.scalar(select(User).where(User.id == user_id))
         subj = session.get(Subject, subject_id)
         user.subjects.append(subj)
         session.commit()
-        print(f"Связь между пользователем: {user.name} и предметом {user.subjects} добавлена")
+        print(f"Связь между пользователем: {user.name} и предметом {subj.subject} добавлена")
 
 create_db_and_tables()
 try:
-    add_subject('english')
+    #add_subject('english')
     #add_user(54321, None, 'Raz', 10)
     add_join(54321, 3)
     print('arr')
