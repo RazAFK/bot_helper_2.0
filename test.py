@@ -1,2 +1,5 @@
-for i in range(31, 61):
-    print(f'{i}. ')
+def funk(n):
+    for i in range(n):
+        yield i
+
+print(list(funk(4)))
