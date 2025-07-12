@@ -1,11 +1,20 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Table, DateTime, Boolean, select
+from sqlalchemy import create_engine, event, Column, Integer, String, ForeignKey, Table, DateTime, Boolean, select
 from sqlalchemy.orm import relationship, sessionmaker, declarative_base, Mapped, mapped_column, scoped_session
 import sqlalchemy
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import List
 
-DB_URL = 'sqlite:///database.db'
-engine = create_engine(DB_URL, echo=True)
+DB_URL = 'sqlite:///database/database.db'
+engine = create_engine(
+    DB_URL,
+    echo=True, 
+    pool_size=5, 
+    connect_args={
+        'check_same_thread': False,
+        'timeout': 30
+    }
+    )
 Session = scoped_session(sessionmaker(bind=engine))
 
 Base = declarative_base()
@@ -99,6 +108,29 @@ class Subject(Base):
 
 def create_db_and_tables():
 	Base.metadata.create_all(engine)
+
+@event.listens_for(engine, "connect")
+def set_wal_mode(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL")  # Включаем WAL
+    cursor.execute("PRAGMA wal_autocheckpoint=1000")  # Настройка checkpoint
+    cursor.execute("PRAGMA journal_size_limit=1048576")  # Лимит 1MB
+    cursor.execute("PRAGMA synchronous=NORMAL")  # Баланс скорости и надежности
+    cursor.execute("PRAGMA cache_size=-2000")   # Кеш 2MB
+    cursor.execute("PRAGMA busy_timeout=30000")  # Таймаут 30 сек
+    cursor.close()
+
+@contextmanager
+def db_session():
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        Session.remove()
       
 
 def add_user(user_id, username, name, clas, warn=0, is_admin=0, is_teacher=0, busy=0):
@@ -118,7 +150,7 @@ def add_user(user_id, username, name, clas, warn=0, is_admin=0, is_teacher=0, bu
         print(f"Пользователь {name} добавлен")
 
 def add_subject(subj):
-    with Session() as session:  # Автоматический remove() при выходе
+    with db_session() as session:  # Автоматический remove() при выходе
         new_subject = Subject(subject=subj)
         session.add(new_subject)
         session.commit()
@@ -155,7 +187,7 @@ def add_theme(u_id, t_id, s_id, question=None):
 
 create_db_and_tables()
 try:
-    #add_subject('english')
+    #add_subject('history')
     #add_user(1, None, 'Raz', 10)
     #add_join(1, 3)
     #del_user(1)
