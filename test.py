@@ -1,5 +1,6 @@
-def funk(n):
-    for i in range(n):
-        yield i
+from db import *
 
-print(list(funk(4)))
+
+#create_db_and_tables()
+
+del_asked_theme(11111)

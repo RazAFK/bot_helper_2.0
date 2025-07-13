@@ -1,9 +1,12 @@
+import sqlalchemy
 from sqlalchemy import create_engine, event, Column, Integer, String, ForeignKey, Table, DateTime, Boolean, select
 from sqlalchemy.orm import relationship, sessionmaker, declarative_base, Mapped, mapped_column, scoped_session
-import sqlalchemy
+
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import List
+
+from settings import *
 
 DB_URL = 'sqlite:///database/database.db'
 engine = create_engine(
@@ -18,7 +21,7 @@ engine = create_engine(
 Session = scoped_session(sessionmaker(bind=engine))
 
 Base = declarative_base()
-
+#tables
 JoinTS = Table(
     "joinedTS",
     Base.metadata,
@@ -29,7 +32,7 @@ JoinTS = Table(
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, unique=True)
     username: Mapped[str] = mapped_column(String, nullable=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     clas: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -61,11 +64,10 @@ class User(Base):
         back_populates="users"
     )
 
-    
 class Theme(Base):
     __tablename__ = "themes"
 
-    t_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True, nullable=False)
+    t_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True, nullable=False, default=0)
     u_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     s_id: Mapped[int] = mapped_column(ForeignKey('subjects.id'), nullable=False)
     question: Mapped[str] = mapped_column(String, nullable=True)
@@ -86,7 +88,6 @@ class Theme(Base):
         back_populates="themes"
     )
 
-
 class Subject(Base):
     __tablename__ = 'subjects'
      
@@ -105,7 +106,7 @@ class Subject(Base):
         back_populates="subjects"
     )
 
-
+#initialization
 def create_db_and_tables():
 	Base.metadata.create_all(engine)
 
@@ -132,9 +133,9 @@ def db_session():
     finally:
         Session.remove()
       
-
+#adds(inserts)
 def add_user(user_id, username, name, clas, warn=0, is_admin=0, is_teacher=0, busy=0):
-    with Session() as session:  # Автоматический remove() при выходе
+    with db_session() as session:  # Автоматический remove() при выходе
         new_user = User(
             id=user_id,
             username=username,
@@ -145,54 +146,105 @@ def add_user(user_id, username, name, clas, warn=0, is_admin=0, is_teacher=0, bu
             is_teacher=is_teacher,
             busy=busy
             )
-        session.add(new_user)
-        session.commit()
-        print(f"Пользователь {name} добавлен")
+        try:
+            session.add(new_user)
+            if echo:
+                print(f"[INFO] Пользователь {name} добавлен")
+        except Exception as e:
+            return e if echo else None
 
 def add_subject(subj):
     with db_session() as session:  # Автоматический remove() при выходе
         new_subject = Subject(subject=subj)
-        session.add(new_subject)
-        session.commit()
-        print(f"Предмет {subj} добавлен")
-
+        try:
+            session.add(new_subject)
+            if echo:
+                print(f"[INFO] Предмет {subj} добавлен")
+        except Exception as e:
+            return e if echo else None
 
 def add_join(user_id, subject_id):
-    with Session() as session:
-        #user = session.get(User, user_id)
-        user = session.scalar(select(User).where(User.id == user_id))
-        subj = session.get(Subject, subject_id)
-        user.subjects.append(subj)
-        session.commit()
-        print(f"Связь между пользователем: {user.name} и предметом {subj.subject} добавлена")
+    with db_session() as session:
+        try:
+            #user = session.scalar(select(User).where(User.id == user_id))
+            user = session.get(User, user_id)
+            subj = session.get(Subject, subject_id)
+            user.subjects.append(subj)
+            if echo:
+                print(f"[INFO] Связь между пользователем: {user.name} и предметом {subj.subject} добавлена")
+        except Exception as e:
+            return e if echo else None
+        
+def add_theme(u_id, s_id, question=None):
+    with db_session() as session:
+        try:
+            #user = session.get(User, user_id)
+            user = session.get(User, u_id)
+            subject= session.get(Subject, s_id)
+            theme = Theme(u_id=user.id, s_id=subject.id, question=question)
+            session.add(theme)
+            if echo:
+                print(f"[INFO] Тема {question} с пользователем {user.name}, по предмету {subject.subject} создана")
+        except Exception as e:
+            return e if echo else None
 
+#sets(updates)
+
+
+#dels
 def del_user(user_id):
-    with Session() as session:
-        user = session.scalar(select(User).where(User.id == user_id))
-        session.delete(user)
-        session.commit()
-        print(f"Пользователь {user.name} удалён")
+    with db_session() as session:
+        try:
+            user = session.get(User, user_id)
+            session.delete(user)
+            if echo:
+                print(f"[INFO] Пользователь {user.name} удалён")
+        except Exception as e:
+            return e if echo else None
+        
+def del_subject(subject_id):
+    with db_session() as session:
+        try:
+            subject = session.get(Subject, subject_id)
+            session.delete(subject)
+            if echo:
+                print(f"[INFO] Предмет {subject.subject} удалён")
+        except Exception as e:
+            return e if echo else None
+        
+def del_join(user_id, subject_id):
+    with db_session() as session:
+        try:
+            #user = session.scalar(select(User).where(User.id == user_id))
+            user = session.get(User, user_id)
+            subj = session.get(Subject, subject_id)
+            user.subjects.remove(subj)
+            if echo:
+                print(f"[INFO] Связь между пользователем: {user.name} и предметом {subj.subject} удалена")
+        except Exception as e:
+            return e if echo else None
 
-def add_theme(u_id, t_id, s_id, question=None):
-    with Session() as session:
-        #user = session.get(User, user_id)
-        user = session.get(User, u_id)
-        teacher = session.get(User, t_id)
-        subject= session.get(Subject, s_id)
-        theme = Theme(u_id=user.id, t_id=teacher.id, s_id=subject.id, question=question)
-        session.add(theme) 
-        session.commit()
-        print(f"Тема {question} с пользователем {user.name} и преподавателем {teacher.name}, по предмету {subject.subject}")
+def del_asked_theme(user_id):
+    with db_session() as session:
+        print(f'[WARN] its work')
+        #try:
+        theme = session.scalar(select(Theme).where(Theme.u_id == user_id and Theme.status == 0))
+        user = session.get(User, user_id)
+        print(f'[ERROR] {theme.subject}')
+        session.delete(theme)
+        if echo:
+            print(f"[INFO] Ещё не отвеченная тема пользователя: {user.name} удалена")
+        # except Exception as e:
+        #     return e if echo else None
 
 
-create_db_and_tables()
-try:
-    #add_subject('history')
-    #add_user(1, None, 'Raz', 10)
-    #add_join(1, 3)
-    #del_user(1)
-    #add_theme(1, 2, 2, 'Goida')
-    #add_join(2, 2)
-    print('work')
-except sqlalchemy.exc.IntegrityError:
-    print('unic fail')
+# try:
+#     #add_subject('history')
+#     #add_user(1, None, 'Raz', 10)
+#     #add_join(1, 3)
+#     #del_user(1)
+#     #add_theme(1, 2, 2, 'Goida')
+#     #add_join(2, 2)
+#     print('work')
+# except sqlalchemy.exc.IntegrityError:
+#     print('unic fail')
