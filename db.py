@@ -188,54 +188,66 @@ def add_theme(u_id, s_id, question=None):
             log_error(ex)
             return False
 
-#sets(updates)
-
+#update(updates)
+def update(user_id, new_name):
+    with db_session() as session:
+        user = session.get(User, user_id)
+        
 
 #dels
 def del_user(user_id):
     with db_session() as session:
+        user = session.get(User, user_id)
+        session.delete(user)
         try:
-            user = session.get(User, user_id)
-            session.delete(user)
-            if echo:
-                print(f"[INFO] Пользователь {user.name} удалён")
-        except Exception as e:
-            return e if echo else None
+            session.commit()
+            log_info(f'user: {user.name}', InfoType.DEL)
+            return True
+        except Exception as ex:
+            session.rollback()
+            log_error(ex)
+            return False
         
 def del_subject(subject_id):
     with db_session() as session:
+        subject = session.get(Subject, subject_id)
+        session.delete(subject)
         try:
-            subject = session.get(Subject, subject_id)
-            session.delete(subject)
-            if echo:
-                print(f"[INFO] Предмет {subject.subject} удалён")
-        except Exception as e:
-            return e if echo else None
+            session.commit()
+            log_info(f'subject: {subject.subject}', InfoType.DEL)
+            return True
+        except Exception as ex:
+            session.rollback()
+            log_error(ex)
+            return False
         
 def del_join(user_id, subject_id):
     with db_session() as session:
+        user = session.get(User, user_id)
+        subj = session.get(Subject, subject_id)
+        user.subjects.remove(subj)
         try:
-            #user = session.scalar(select(User).where(User.id == user_id))
-            user = session.get(User, user_id)
-            subj = session.get(Subject, subject_id)
-            user.subjects.remove(subj)
-            if echo:
-                print(f"[INFO] Связь между пользователем: {user.name} и предметом {subj.subject} удалена")
-        except Exception as e:
-            return e if echo else None
+            session.commit()
+            log_info(f'join between: {user.name} and {subj.subject}', InfoType.DEL)
+            return True
+        except Exception as ex:
+            session.rollback()
+            log_error(ex)
+            return False
 
 def del_asked_theme(user_id):
     with db_session() as session:
-        print(f'[WARN] its work')
-        #try:
         theme = session.scalar(select(Theme).where(Theme.u_id == user_id and Theme.status == 0))
         user = session.get(User, user_id)
-        print(f'[ERROR] {theme.subject}')
         session.delete(theme)
-        if echo:
-            print(f"[INFO] Ещё не отвеченная тема пользователя: {user.name} удалена")
-        # except Exception as e:
-        #     return e if echo else None
+        try:
+            session.commit()
+            log_info(f'unanswered theme from user: {user.name}', InfoType.DEL)
+            return True
+        except Exception as ex:
+            session.rollback()
+            log_error(ex)
+            return False
 
 
 # try:

@@ -7,7 +7,7 @@ from enum import Enum, auto
 class InfoType(Enum):
     ADD = auto()  # Для операций добавления
     DEL = auto()  # Для операций удаления
-    SET = auto()  # Для операций изменения
+    UPDATE = auto()  # Для операций изменения
     INFO = auto()  # Для обычных информационных сообщений
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
