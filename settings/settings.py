@@ -1,4 +1,5 @@
 echo = True
+dbecho = False
 developing = True
 
 subjects = ['Математика',

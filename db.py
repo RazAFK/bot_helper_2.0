@@ -6,12 +6,12 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import List
 
-from settings import *
+from settings.settings import *
 
 DB_URL = 'sqlite:///database/database.db'
 engine = create_engine(
     DB_URL,
-    echo=True, 
+    echo=dbecho, 
     pool_size=5, 
     connect_args={
         'check_same_thread': False,
@@ -110,16 +110,6 @@ class Subject(Base):
 def create_db_and_tables():
 	Base.metadata.create_all(engine)
 
-@event.listens_for(engine, "connect")
-def set_wal_mode(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL")  # Включаем WAL
-    cursor.execute("PRAGMA wal_autocheckpoint=1000")  # Настройка checkpoint
-    cursor.execute("PRAGMA journal_size_limit=1048576")  # Лимит 1MB
-    cursor.execute("PRAGMA synchronous=NORMAL")  # Баланс скорости и надежности
-    cursor.execute("PRAGMA cache_size=-2000")   # Кеш 2MB
-    cursor.execute("PRAGMA busy_timeout=30000")  # Таймаут 30 сек
-    cursor.close()
 
 @contextmanager
 def db_session():
@@ -127,7 +117,7 @@ def db_session():
     try:
         yield session
         session.commit()
-    except:
+    except Exception as e:
         session.rollback()
         raise
     finally:
@@ -146,12 +136,9 @@ def add_user(user_id, username, name, clas, warn=0, is_admin=0, is_teacher=0, bu
             is_teacher=is_teacher,
             busy=busy
             )
-        try:
-            session.add(new_user)
-            if echo:
-                print(f"[INFO] Пользователь {name} добавлен")
-        except Exception as e:
-            return e if echo else None
+        session.add(new_user)
+        if echo:
+            print(f"[INFO] Пользователь {name} добавлен")
 
 def add_subject(subj):
     with db_session() as session:  # Автоматический remove() при выходе
