@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship, sessionmaker, declarative_base, Mapped,
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import List
+from log import log_error, log_info, InfoType
 
 from settings.settings import *
 
@@ -116,8 +117,7 @@ def db_session():
     session = Session()
     try:
         yield session
-        session.commit()
-    except Exception as e:
+    except:
         session.rollback()
         raise
     finally:
@@ -137,43 +137,56 @@ def add_user(user_id, username, name, clas, warn=0, is_admin=0, is_teacher=0, bu
             busy=busy
             )
         session.add(new_user)
-        if echo:
-            print(f"[INFO] Пользователь {name} добавлен")
+        try:
+            session.commit()
+            log_info(f'user: {new_user.name}', InfoType.ADD)
+            return True
+        except Exception as ex:
+            session.rollback()
+            log_error(ex)
+            return False
 
 def add_subject(subj):
     with db_session() as session:  # Автоматический remove() при выходе
         new_subject = Subject(subject=subj)
+        session.add(new_subject)
         try:
-            session.add(new_subject)
-            if echo:
-                print(f"[INFO] Предмет {subj} добавлен")
-        except Exception as e:
-            return e if echo else None
+            session.commit()
+            log_info(f'subject: {new_subject.subject}', InfoType.ADD)
+            return True
+        except Exception as ex:
+            session.rollback()
+            log_error(ex)
+            return False
 
 def add_join(user_id, subject_id):
     with db_session() as session:
+        user = session.get(User, user_id)
+        subj = session.get(Subject, subject_id)
+        user.subjects.append(subj)
         try:
-            #user = session.scalar(select(User).where(User.id == user_id))
-            user = session.get(User, user_id)
-            subj = session.get(Subject, subject_id)
-            user.subjects.append(subj)
-            if echo:
-                print(f"[INFO] Связь между пользователем: {user.name} и предметом {subj.subject} добавлена")
-        except Exception as e:
-            return e if echo else None
+            session.commit()
+            log_info(f'join between: {user.name} and {subj.subject}', InfoType.ADD)
+            return True
+        except Exception as ex:
+            session.rollback()
+            log_error(ex)
+            return False
         
 def add_theme(u_id, s_id, question=None):
     with db_session() as session:
+        user = session.get(User, u_id)
+        subject = session.get(Subject, s_id)
+        theme = Theme(u_id=user.id, s_id=subject.id, question=question)
+        session.add(theme)
         try:
-            #user = session.get(User, user_id)
-            user = session.get(User, u_id)
-            subject= session.get(Subject, s_id)
-            theme = Theme(u_id=user.id, s_id=subject.id, question=question)
-            session.add(theme)
-            if echo:
-                print(f"[INFO] Тема {question} с пользователем {user.name}, по предмету {subject.subject} создана")
-        except Exception as e:
-            return e if echo else None
+            session.commit()
+            log_info(f'theme with user: {user.name} on subject: {subject.subject}', InfoType.ADD)
+            return True
+        except Exception as ex:
+            session.rollback()
+            log_error(ex)
+            return False
 
 #sets(updates)
 

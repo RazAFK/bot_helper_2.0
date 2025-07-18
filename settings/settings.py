@@ -1,6 +1,6 @@
 echo = True
 dbecho = False
-developing = True
+debug = True
 
 subjects = ['Математика',
             'Русский язык',

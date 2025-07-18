@@ -1,13 +1,20 @@
 import logging
-import os
-import re
+import os, re
 from datetime import datetime
+from enum import Enum, auto
+
+# Определяем типы информационных сообщений
+class InfoType(Enum):
+    ADD = auto()  # Для операций добавления
+    DEL = auto()  # Для операций удаления
+    SET = auto()  # Для операций изменения
+    INFO = auto()  # Для обычных информационных сообщений
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 logs_dir = os.path.join(script_dir, "logs")
 os.makedirs(logs_dir, exist_ok=True)
 
-# Настройка логгера для информации (UTF-8)
+# Настройка логгера для информации
 info_logger = logging.getLogger('info_logger')
 info_logger.setLevel(logging.INFO)
 info_handler = logging.FileHandler(
@@ -29,6 +36,15 @@ error_handler.setFormatter(
 )
 error_logger.addHandler(error_handler)
 
+def log_info(message: str, info_type: InfoType = InfoType.INFO):
+    """
+    Записывает информационное сообщение с указанием типа
+    :param message: Текст сообщения
+    :param info_type: Тип сообщения (из enum InfoType)
+    """
+    formatted_message = f"[{info_type.name}] {message}"
+    info_logger.info(formatted_message)
+
 def extract_error_details(error):
     """Извлекает основное сообщение об ошибке и параметры из SQLAlchemy ошибки"""
     error_type = type(error).__name__
@@ -47,15 +63,14 @@ def extract_error_details(error):
     
     return error_msg
 
-def log_error(error):
-    """Логирует ошибку в сокращенном формате"""
+def log_error(error: Exception):
+    """
+    Записывает информацию об ошибке
+    :param error: Объект исключения
+    """
     error_type = type(error).__name__
     error_details = extract_error_details(error)
     error_logger.error(
         error_details,
         extra={'error_type': error_type}
     )
-
-def log_info(message):
-    """Записывает сообщение в logs/info.log"""
-    info_logger.info(message)
