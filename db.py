@@ -1,13 +1,15 @@
 import sqlalchemy
-from sqlalchemy import create_engine, event, Column, Integer, String, ForeignKey, Table, DateTime, Boolean, select
+from sqlalchemy import create_engine, event, Column, Integer, String, ForeignKey, Table, DateTime, Boolean, select, update
 from sqlalchemy.orm import relationship, sessionmaker, declarative_base, Mapped, mapped_column, scoped_session
 
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import List
 from log import log_error, log_info, InfoType
+from enum import Enum, auto
 
 from settings.settings import *
+from errors import *
 
 DB_URL = 'sqlite:///database/database.db'
 engine = create_engine(
@@ -189,10 +191,42 @@ def add_theme(u_id, s_id, question=None):
             return False
 
 #update(updates)
-def update(user_id, new_name):
+def rows_update(model, conditions, updates, max_rows=None):
+    '''
+    Массовое обновление с контролем
+    
+    :param max_rows: Максимальное разрешенное количество обновлений
+    '''
     with db_session() as session:
-        user = session.get(User, user_id)
+        try:
+            # Проверяем количество затрагиваемых строк
+            if max_rows is not None:
+                count = session.query(model).filter(conditions).count()
+                if count > max_rows:
+                    raise InsertValueError('Too many rows for update')
+            
+            # Выполняем обновление
+            stmt = (
+                update(model)
+                .where(conditions)
+                .values(**updates)
+                .execution_options(synchronize_session="fetch")
+            )
+            result = session.execute(stmt)
+            
+            session.commit()
+            log_info(f'conditions: {conditions} updated with values: {updates}', InfoType.UPDATE)
+            return True
+            
+        except Exception as ex:
+
+            session.rollback()
+            log_error(ex)
+            return False
         
+
+
+
 
 #dels
 def del_user(user_id):

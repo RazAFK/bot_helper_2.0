@@ -37,16 +37,16 @@ error_handler.setFormatter(
 error_logger.addHandler(error_handler)
 
 def log_info(message: str, info_type: InfoType = InfoType.INFO):
-    """
+    '''
     Записывает информационное сообщение с указанием типа
     :param message: Текст сообщения
     :param info_type: Тип сообщения (из enum InfoType)
-    """
+    '''
     formatted_message = f"[{info_type.name}] {message}"
     info_logger.info(formatted_message)
 
 def extract_error_details(error):
-    """Извлекает основное сообщение об ошибке и параметры из SQLAlchemy ошибки"""
+    '''Извлекает основное сообщение об ошибке и параметры из SQLAlchemy ошибки'''
     error_type = type(error).__name__
     error_msg = str(error)
     
@@ -64,10 +64,10 @@ def extract_error_details(error):
     return error_msg
 
 def log_error(error: Exception):
-    """
+    '''
     Записывает информацию об ошибке
     :param error: Объект исключения
-    """
+    '''
     error_type = type(error).__name__
     error_details = extract_error_details(error)
     error_logger.error(
