@@ -1,5 +1,2 @@
 /logs
 *.pyc
-__pycache__/
-__pycache__/
-settings/__pycache__/
