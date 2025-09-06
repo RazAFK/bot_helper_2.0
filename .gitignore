@@ -1,5 +1,5 @@
 /logs
 *.pyc
-__pycache__/errors.cpython-313.pyc
-__pycache__/log.cpython-313.pyc
-settings/__pycache__/settings.cpython-313.pyc
+__pycache__/
+__pycache__/
+settings/__pycache__/
