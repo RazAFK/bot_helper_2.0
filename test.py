@@ -9,7 +9,6 @@ from errors import *
 
 rows_update(
     model = User,
-    conditions= (User.id == 1),
-    updates={'username': 'idiot'},
-    max_rows=1
+    conditions = (User.id == 1) & (User.name == 'sha'),
+    updates={'username': '123', 'name': 'sha'}
 )

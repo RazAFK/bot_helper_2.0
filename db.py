@@ -193,9 +193,9 @@ def add_theme(u_id, s_id, question=None):
 #update(updates)
 def rows_update(model, conditions, updates, max_rows=None):
     '''
-    Массовое обновление с контролем
+    update
     
-    :param max_rows: Максимальное разрешенное количество обновлений
+    conditions: for more complex conditions, use & as and, | as or \n
     '''
     with db_session() as session:
         try:
