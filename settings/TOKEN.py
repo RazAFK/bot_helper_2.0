@@ -1,4 +1,4 @@
-student_token = '7467162423:AAFrTJN7xvnlzbCgLxExuF0IiJ41SmoFz7o'
-teacher_token = '7811821101:AAGpsM2CxNNYeJxXezFvmbFoaCeOZOPXcT4'
-admin_token = ''
-test_bot = '6888258529:AAHokn1Roc9dDZx7vZmVKdSKsxTLq1d8MYY'
+student_token = '8304202460:AAH6ahG6CY09PFxiY68grjCSxibH_bL7F5k'
+teacher_token = '8498240118:AAHeG7btVKG0VtM6LdWJYUKVZYcVy9CCrNE'
+admin_token = '8100519561:AAEZBxHMqOAjT3WTwo0XgGQvIDcCHU64tpM'
+test_token = '8322970402:AAGd5vck0Qo3LDq1NPGI30kuq0r_41ohtsI'
