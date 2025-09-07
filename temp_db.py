@@ -28,15 +28,8 @@ Session = scoped_session(sessionmaker(bind=engine))
 
 Base = declarative_base()
 #tables
-JoinTS = Table(
-    "joinedTS",
-    Base.metadata,
-    Column("u_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
-    Column("s_id", Integer, ForeignKey("subjects.id", ondelete="CASCADE"), primary_key=True) 
-)
-
-class User(Base):
-    __tablename__ = "users"
+class Message(Base):
+    __tablename__ = "messages"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, unique=True)
     username: Mapped[str] = mapped_column(String, nullable=True)
