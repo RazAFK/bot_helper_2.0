@@ -70,7 +70,8 @@ class User(Base):
 class Theme(Base):
     __tablename__ = "themes"
 
-    t_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True, nullable=False, default=0)
+    id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, nullable=False)
+    t_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False, default=0)
     u_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     s_id: Mapped[int] = mapped_column(ForeignKey('subjects.id'), nullable=False)
     question: Mapped[str] = mapped_column(String, nullable=True)
