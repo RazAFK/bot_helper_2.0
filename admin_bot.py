@@ -45,10 +45,6 @@ def start(message):
     photo_id = 'AQADp_wxG7Jh-Ul4'
     abot.send_photo(message.chat.id, file_id, caption='Hey thats your file')
 
-@abot.message_handler(commands=['animation'])
-def start(message):
-    file_id = message.animation[0].file_id
-    abot.send_animation(message.chat.id, file_id)
 
 
 if __name__ == "__main__":
