@@ -1,11 +1,11 @@
 import sqlalchemy
-from sqlalchemy import create_engine, event, Column, Integer, String, ForeignKey, Table, DateTime, Boolean, select, update
+from sqlalchemy import create_engine, event, Column, Integer, String, ForeignKey, Table, DateTime, Boolean, select, update, JSON
 from sqlalchemy.orm import relationship, sessionmaker, declarative_base, Mapped, mapped_column, scoped_session
 
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import List
-from log import log_error, log_info, InfoType
+from typing import List, Dict, Any, Optional
+from log import log_error, log_info, InfoType, log_temp, log_temp_error
 from enum import Enum, auto
 
 from settings.settings import *
@@ -32,16 +32,11 @@ class Message(Base):
     __tablename__ = "messages"
 
     id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, nullable=False)
+    theme_id: Mapped[int] = mapped_column(Integer, nullable=False)
     sender: Mapped[int] = mapped_column(Integer, nullable=False)#0 - admin, 1 - teacher, 2 - student
     receiver: Mapped[int] = mapped_column(Integer, nullable=False)#0 - admin, 1 - teacher, 2 - student
-    username: Mapped[str] = mapped_column(String, nullable=True)
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    clas: Mapped[int] = mapped_column(Integer, nullable=False)
-    registration_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(tz=timezone.utc), nullable=False)
-    warn: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    is_teacher: Mapped[int] = mapped_column(Integer, nullable=False)#0 - не препод, 1 - не подтверждённый препод, 2 - подтверждённый препод
-    busy: Mapped[int] = mapped_column(Integer, nullable=False)#0 - не занят, 1 - занят как ученик, 2 - занят как препод, 12 - занят и как препод и как ученик
+    content: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+    send_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(tz=timezone.utc), nullable=False)
 
 #initialization
 def create_db_and_tables():
@@ -60,30 +55,26 @@ def db_session():
         Session.remove()
       
 #adds(inserts)
-def add_user(user_id, username, name, clas, warn=0, is_admin=0, is_teacher=0, busy=0):
+def add_message(theme_id, sender, receiver, content):
     with db_session() as session:  # Автоматический remove() при выходе
-        new_user = User(
-            id=user_id,
-            username=username,
-            name=name,
-            clas=clas,
-            warn=warn,
-            is_admin=is_admin,
-            is_teacher=is_teacher,
-            busy=busy
-            )
-        session.add(new_user)
+        new_message = Message(
+            theme_id = theme_id,
+            sender = sender,
+            receiver = receiver,
+            content = content
+        )
+        session.add(new_message)
         try:
             session.commit()
-            log_info(f'user: {new_user.name}', InfoType.ADD)
+            log_temp(f'new message in theme {new_message.theme_id}, from {new_message.sender} to {new_message.receiver}', InfoType.TEMP)
             return True
         except Exception as ex:
             session.rollback()
-            log_error(ex)
+            log_temp_error(ex)
             return False
 
 #update(updates)
-def rows_update(model, conditions, updates, max_rows=None):
+def update_message(conditions, updates, model=Message, max_rows=None):
     '''
     update
     
@@ -107,25 +98,50 @@ def rows_update(model, conditions, updates, max_rows=None):
             result = session.execute(stmt)
             
             session.commit()
-            log_info(f'conditions: {conditions} updated with values: {updates}', InfoType.UPDATE)
+            log_temp(f'conditions: {conditions} updated with values: {updates}', InfoType.UPDATE)
             return True
             
         except Exception as ex:
 
             session.rollback()
-            log_error(ex)
+            log_temp_error(ex)
             return False
 
 #dels
-def del_user(user_id):
+def del_message(message_id):
     with db_session() as session:
-        user = session.get(User, user_id)
-        session.delete(user)
+        message = session.get(Message, message_id)
+        session.delete(message)
         try:
             session.commit()
-            log_info(f'user: {user.name}', InfoType.DEL)
+            log_temp(f'user: {message.id}', InfoType.DEL)
             return True
         except Exception as ex:
             session.rollback()
-            log_error(ex)
+            log_temp_error(ex)
+            return False
+        
+
+#update(updates)
+def select_message(conditions, model=Message):
+    '''
+    select
+    
+    conditions: for more complex conditions, use & as and, | as or \n
+    '''
+    with db_session() as session:
+        try:
+            # получаем объект
+            stmt = (
+                select(model)
+                .where(conditions)
+                .execution_options(synchronize_session="fetch")
+            )
+            result = session.scalars(stmt).all()
+            return result
+            
+        except Exception as ex:
+
+            session.rollback()
+            log_temp_error(ex)
             return False

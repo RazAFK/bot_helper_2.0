@@ -9,6 +9,7 @@ class InfoType(Enum):
     DEL = auto()  # Для операций удаления
     UPDATE = auto()  # Для операций изменения
     INFO = auto()  # Для обычных информационных сообщений
+    TEMP = auto() # Для бд связи
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 logs_dir = os.path.join(script_dir, "logs")
@@ -19,6 +20,16 @@ info_logger = logging.getLogger('info_logger')
 info_logger.setLevel(logging.INFO)
 info_handler = logging.FileHandler(
     os.path.join(logs_dir, "info.log"), 
+    encoding='utf-8'
+)
+info_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+info_logger.addHandler(info_handler)
+
+# Настройка логгера для связи
+info_logger = logging.getLogger('info_logger')
+info_logger.setLevel(logging.INFO)
+info_handler = logging.FileHandler(
+    os.path.join(logs_dir, "temp.log"), 
     encoding='utf-8'
 )
 info_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
@@ -36,11 +47,32 @@ error_handler.setFormatter(
 )
 error_logger.addHandler(error_handler)
 
+# Настройка логгера для ошибок связи
+error_logger = logging.getLogger('error_logger')
+error_logger.setLevel(logging.ERROR)
+error_handler = logging.FileHandler(
+    os.path.join(logs_dir, "temp_error.log"), 
+    encoding='utf-8'
+)
+error_handler.setFormatter(
+    logging.Formatter('%(asctime)s - %(filename)s - %(funcName)s - [%(error_type)s] %(message)s')
+)
+error_logger.addHandler(error_handler)
+
 def log_info(message: str, info_type: InfoType = InfoType.INFO):
     '''
     Записывает информационное сообщение с указанием типа
     :param message: Текст сообщения
     :param info_type: Тип сообщения (из enum InfoType)
+    '''
+    formatted_message = f"[{info_type.name}] {message}"
+    info_logger.info(formatted_message)
+
+def log_temp(message: str, info_type: InfoType = InfoType.TEMP):
+    '''
+    Записывает информационное сообщение с указанием типа
+    :param message: Текст сообщения
+    :param temp_type: Тип сообщения (из enum InfoType)
     '''
     formatted_message = f"[{info_type.name}] {message}"
     info_logger.info(formatted_message)
@@ -64,6 +96,18 @@ def extract_error_details(error):
     return error_msg
 
 def log_error(error: Exception):
+    '''
+    Записывает информацию об ошибке
+    :param error: Объект исключения
+    '''
+    error_type = type(error).__name__
+    error_details = extract_error_details(error)
+    error_logger.error(
+        error_details,
+        extra={'error_type': error_type}
+    )
+
+def log_temp_error(error: Exception):
     '''
     Записывает информацию об ошибке
     :param error: Объект исключения
