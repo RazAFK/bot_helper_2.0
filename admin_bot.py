@@ -1,6 +1,7 @@
 import telebot, time, pprint
 from settings.TOKEN import *
 from db import *
+from telebot.types import InputMediaPhoto, InputMediaDocument
 
 
 abot = telebot.TeleBot(admin_token)
@@ -34,17 +35,26 @@ def start(message):
 
 @abot.message_handler(commands=['senddocumen'])
 def start(message):
-    file_id = 'BQACAgIAAxkBAAMoaMAULXUB-qRRU3Bf0_k3_JtRTz8AAsN6AALrLwFKT4tPXRlCvSs2BA'
-    abot.send_document(message.chat.id, file_id, caption='Hey thats your file')
+    document_id = 'BQACAgIAAxkBAAMoaMAULXUB-qRRU3Bf0_k3_JtRTz8AAsN6AALrLwFKT4tPXRlCvSs2BA'
+    abot.send_document(message.chat.id, document_id, caption='Hey thats your file')
 
 
 
 @abot.message_handler(commands=['sendphoto'])
 def start(message):
-    file_id = 'AgACAgIAAxkBAAMhaMATdb7ZBH9fAxu-ywzxQ0lEDOkAAqf8MRuyYflJgzBa7HPGdBkBAAMCAANzAAM2BA'
-    photo_id = 'AQADp_wxG7Jh-Ul4'
-    abot.send_photo(message.chat.id, file_id, caption='Hey thats your file')
+    photo_id = 'AgACAgIAAxkBAAMhaMATdb7ZBH9fAxu-ywzxQ0lEDOkAAqf8MRuyYflJgzBa7HPGdBkBAAMCAANzAAM2BA'
+    #photo_id = 'AQADp_wxG7Jh-Ul4'
+    abot.send_photo(message.chat.id, photo_id, caption='Hey thats your file')
 
+
+@abot.message_handler(commands=['sendgroup'])
+def start(message):
+    photo_id = 'AgACAgIAAxkBAAMhaMATdb7ZBH9fAxu-ywzxQ0lEDOkAAqf8MRuyYflJgzBa7HPGdBkBAAMCAANzAAM2BA'
+    #photo_id = 'AQADp_wxG7Jh-Ul4'
+    document_id = 'BQACAgIAAxkBAAMoaMAULXUB-qRRU3Bf0_k3_JtRTz8AAsN6AALrLwFKT4tPXRlCvSs2BA'
+    #abot.send_photo(message.chat.id, photo_id, caption='Hey thats your file')
+    abot.send_media_group(message.chat.id, [InputMediaDocument(document_id, caption='here is your documents``'),InputMediaDocument(document_id, caption='here is your documents``')])
+    abot.send_media_group(message.chat.id, [InputMediaPhoto(photo_id, caption='here is your documents``'),InputMediaPhoto(photo_id, caption='here is your documents``')])
 
 
 if __name__ == "__main__":
