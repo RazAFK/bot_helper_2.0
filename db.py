@@ -79,6 +79,8 @@ class Theme(Base):
     start_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     end_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     status: Mapped[int] = mapped_column(Integer, nullable=False, default=0)#0 - начата, 1 - в работе, 2 - завершена
+    t_raito: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    u_raito: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     answering_user: Mapped["User"] = relationship(
         back_populates="answered_themes",
