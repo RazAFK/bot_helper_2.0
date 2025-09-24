@@ -1,10 +1,16 @@
-import telebot, time, pprint
+import telebot, time, pprint, db, temp_db
 from settings.TOKEN import *
 from db import *
+from temp_db import *
 from telebot.types import InputMediaPhoto, InputMediaDocument
 
 
 abot = telebot.TeleBot(admin_token)
+
+
+
+
+
 
 
 
@@ -54,7 +60,7 @@ def start(message):
     document_id = 'BQACAgIAAxkBAAMoaMAULXUB-qRRU3Bf0_k3_JtRTz8AAsN6AALrLwFKT4tPXRlCvSs2BA'
     #abot.send_photo(message.chat.id, photo_id, caption='Hey thats your file')
     abot.send_media_group(message.chat.id, [InputMediaDocument(document_id, caption='here is your documents``'),InputMediaDocument(document_id, caption='here is your documents``')])
-    abot.send_media_group(message.chat.id, [InputMediaPhoto(photo_id, caption='here is your documents``'),InputMediaPhoto(photo_id, caption='here is your documents``')])
+    abot.send_media_group(message.chat.id, [InputMediaPhoto(photo_id, caption='here is your photos'),InputMediaPhoto(photo_id), InputMediaPhoto(photo_id), InputMediaPhoto(photo_id)])
 
 
 if __name__ == "__main__":
