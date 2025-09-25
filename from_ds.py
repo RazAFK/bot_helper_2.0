@@ -59,10 +59,10 @@ def scheduled_task():
 
 def run_scheduler():
     """Запуск планировщика"""
-    schedule_funcs.every(30).seconds.do(scheduled_task)
+    schedule.every(30).seconds.do(scheduled_task)
     
     while True:
-        schedule_funcs.run_pending()
+        schedule.run_pending()
         time.sleep(1)
 
 # Запуск планировщика в отдельном потоке

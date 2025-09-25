@@ -36,7 +36,7 @@ def start(message):
 
 @abot.message_handler(content_types=['photo'])
 def start(message):
-    abot.send_message(message.chat.id, message.json['date'])
+    
     abot.send_message(message.chat.id, message.photo[0].file_id)
 
 @abot.message_handler(commands=['senddocumen'])
