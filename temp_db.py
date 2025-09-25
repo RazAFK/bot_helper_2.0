@@ -37,6 +37,7 @@ class Message(Base):
     receiver: Mapped[int] = mapped_column(Integer, nullable=False)#0 - admin, 1 - teacher, 2 - student
     content: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
     send_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), nullable=False)
+    comand: Mapped[int] = mapped_column(Integer, nullable=False)#0 - message, 1 - new theme, 2 - close theme, 3 - turn off
     msg_type: Mapped[int] = mapped_column(Integer, nullable=False)#0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio
 #initialization
 def create_db_and_tables():
@@ -55,13 +56,19 @@ def db_session():
         Session.remove()
       
 #adds(inserts)
-def add_message(theme_id, sender, receiver, content, msg_type):
+def add_message(theme_id, sender, receiver, content, msg_type, comand=0):
     '''
     sender/receiver
     0 - admin, 1 - teacher, 2 - student
 
     content
     {"": "", "":{"": ""}}
+
+    comand
+    #0 - message, 1 - new theme, 2 - turn off
+
+    msg_type
+    #0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio
     '''
     with db_session() as session:  # Автоматический remove() при выходе
         new_message = Message(
@@ -69,6 +76,7 @@ def add_message(theme_id, sender, receiver, content, msg_type):
             sender = sender,
             receiver = receiver,
             content = content,
+            comand = comand,
             msg_type = msg_type
         )
         session.add(new_message)

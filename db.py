@@ -199,6 +199,9 @@ def rows_update(model, conditions, updates, max_rows=None):
     update
     
     conditions: for more complex conditions, use & as and, | as or \n
+
+    example:
+     update(Subject, Subject.id==1, {'id': 'MATH'}, 1)
     '''
     with db_session() as session:
         try:
@@ -288,7 +291,7 @@ def del_asked_theme(user_id):
 
 
 
-def select_message(conditions, model):
+def select_smth(model, conditions):
     '''
     select
     
