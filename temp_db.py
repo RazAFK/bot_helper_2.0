@@ -36,7 +36,7 @@ class Message(Base):
     sender: Mapped[int] = mapped_column(Integer, nullable=False)#0 - admin, 1 - teacher, 2 - student
     receiver: Mapped[int] = mapped_column(Integer, nullable=False)#0 - admin, 1 - teacher, 2 - student
     content: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
-    send_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(tz=timezone.utc), nullable=False)
+    send_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), nullable=False)
 
 #initialization
 def create_db_and_tables():

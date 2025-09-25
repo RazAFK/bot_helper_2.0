@@ -26,7 +26,7 @@ def stop(message):
 
 @abot.message_handler(commands=['start'])
 def start(message):
-    abot.send_message(message.chat.id, 'Hey')
+    abot.send_message(message.chat.id, abot.send_message(message.chat.id, 'Hey').message_id)
     pprint.pprint(vars(message))
 
 @abot.message_handler(content_types=['document'])

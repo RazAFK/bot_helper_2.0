@@ -39,7 +39,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, nullable=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     clas: Mapped[int] = mapped_column(Integer, nullable=False)
-    registration_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(tz=timezone.utc), nullable=False)
+    registration_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), nullable=False)
     warn: Mapped[int] = mapped_column(Integer, nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_teacher: Mapped[int] = mapped_column(Integer, nullable=False)#0 - не препод, 1 - не подтверждённый препод, 2 - подтверждённый препод
@@ -75,7 +75,7 @@ class Theme(Base):
     u_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     s_id: Mapped[int] = mapped_column(ForeignKey('subjects.id'), nullable=False)
     question: Mapped[str] = mapped_column(String, nullable=True)
-    ask_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(tz=timezone.utc), nullable=False)
+    ask_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), nullable=False)
     start_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     end_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     status: Mapped[int] = mapped_column(Integer, nullable=False, default=0)#0 - начата, 1 - в работе, 2 - завершена
@@ -286,6 +286,31 @@ def del_asked_theme(user_id):
             log_error(ex)
             return False
 
+
+
+def select_message(conditions, model):
+    '''
+    select
+    
+    conditions: for more complex conditions, use & as and, | as or \n
+    '''
+    with db_session() as session:
+        try:
+            # получаем объект
+            stmt = (
+                select(model)
+                .where(conditions)
+                .execution_options(synchronize_session="fetch")
+            )
+            result = session.scalars(stmt).all()
+            return result
+            
+        except Exception as ex:
+
+            session.rollback()
+            log_error(ex)
+            return False
+        
 
 # try:
 #     #add_subject('history')
