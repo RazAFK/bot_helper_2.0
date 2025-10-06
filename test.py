@@ -11,3 +11,4 @@ from errors import *
 #temp_db.create_db_and_tables()
 #print(add_message(1, 0, 1, {"text":{"text": "abcd","message_id": 123}, "photo":{"id": "123asd"}}))
 #print(select_message(Message.id==1)[0].content['text']['text'])
+

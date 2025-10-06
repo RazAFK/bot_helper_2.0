@@ -18,7 +18,9 @@ def scheduled_task(bot: telebot.TeleBot, receiver, stime):
     stime: время между проверками(такое же как в планировщике)
     '''
     messages = select_message((Message.send_time>=(datetime.now() - timedelta(seconds=stime))) & (Message.receiver==receiver))
-    print(messages)
+    if not(messages):
+        print('no recent')
+        return True
     for message in messages:
         if message.comand != 3:
             theme = select_smth(Theme, Theme.id == Message.theme_id)[0]

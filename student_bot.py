@@ -6,13 +6,15 @@ from schedule_funcs import *
 
 sbot = telebot.TeleBot(student_token)
 
+
+scheduler_thread = threading.Thread(target=run_scheduler(sbot, 2, 5))
+scheduler_thread.daemon = True
+scheduler_thread.start()
+
 @sbot.message_handler(commands=['start'])
 def start(message):
     add_user(message.chat.id, 'Raz', 'Raz', 10)
     add_theme(message.chat.id, 1, 'smth')
-    scheduler_thread = threading.Thread(target=run_scheduler(sbot, 2, 5))
-    scheduler_thread.daemon = True
-    scheduler_thread.start()
     sbot.send_message(message.chat.id, 'Schedule running')
 
 @sbot.message_handler(content_types=['text'])
