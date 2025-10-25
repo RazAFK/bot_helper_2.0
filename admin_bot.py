@@ -3,9 +3,9 @@ from settings.TOKEN import *
 from db import *
 from temp_db import *
 from telebot.types import InputMediaPhoto, InputMediaDocument
+import settings.settings as sett
 
-
-abot = telebot.TeleBot(admin_token)
+abot = sett.abot
 
 
 

@@ -40,7 +40,7 @@ class Message(Base):
     comand: Mapped[int] = mapped_column(Integer, nullable=False)#0 - message, 1 - new theme, 2 - close theme, 3 - turn off
     msg_type: Mapped[int] = mapped_column(Integer, nullable=False)#0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio
 #initialization
-def create_db_and_tables():
+def create_temp_db_and_tables():
 	Base.metadata.create_all(engine)
 
 

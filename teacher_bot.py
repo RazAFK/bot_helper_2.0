@@ -2,11 +2,12 @@ import telebot, time, threading
 from settings.TOKEN import *
 from db import *
 from schedule_funcs import *
+import settings.settings as sett
 
 
-tbot = telebot.TeleBot(teacher_token)
+tbot = sett.tbot
 
-scheduler_thread = threading.Thread(target=run_scheduler(tbot, 2, 5))
+scheduler_thread = threading.Thread(target=run_scheduler(sbot, 2, scheduled_teacher_task))
 scheduler_thread.daemon = True
 scheduler_thread.start()
 
@@ -17,7 +18,9 @@ def start(message):
 
 @tbot.message_handler(content_types=['text'])
 def message_receiver(message):
-    write_message(message, 2, 1, 0)
+    theme = select_smth(Theme, (Theme.u_id==message.chat.id) & (Theme.status==1))[0]
+    write_message(message, theme.id, 2, 1, 0)
+    print('new message')
 
 
 

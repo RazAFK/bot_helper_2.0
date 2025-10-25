@@ -230,9 +230,19 @@ def rows_update(model, conditions, updates, max_rows=None):
             log_error(ex)
             return False
         
-
-
-
+def update_theme_status(theme_id, new_status):
+    '''
+    status:
+    0 - started, 1 - in work, 2 - ended
+    '''
+    return rows_update(Theme, Theme.id==theme_id, {'status': new_status})
+    
+def update_theme_teacher(theme_id, t_id):
+    '''
+    could be started before <ins>update_theme_status<ins>
+    '''
+    return rows_update(Theme, Theme.id==theme_id, {'t_id': t_id})
+    
 
 #dels
 def del_user(user_id):
