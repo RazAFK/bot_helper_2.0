@@ -18,9 +18,9 @@ import threading, time, datetime
 
 def infinite_worker():
     while True:
-        if datetime.datetime.now().second%10==0 and :
+        if datetime.datetime.now().second%10==0:
             sbot.send_message(1634714523, f'from second thread: {datetime.datetime.now()}')
-
+            time.sleep(1)
 # Создаем демон-поток
 thread = threading.Thread(target=infinite_worker)
 thread.daemon = True  # Ключевой параметр!

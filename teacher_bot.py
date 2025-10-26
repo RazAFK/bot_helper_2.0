@@ -7,11 +7,6 @@ import settings.settings as sett
 
 tbot = sett.tbot
 
-scheduler_thread = threading.Thread(target=run_scheduler(sbot, 2, scheduled_teacher_task))
-scheduler_thread.daemon = True
-scheduler_thread.start()
-
-
 @tbot.message_handler(commands=['start'])
 def start(message):
     tbot.send_message(message.chat.id, 'Schedule running')
@@ -19,15 +14,27 @@ def start(message):
 @tbot.message_handler(content_types=['text'])
 def message_receiver(message):
     theme = select_smth(Theme, (Theme.u_id==message.chat.id) & (Theme.status==1))[0]
-    write_message(message, theme.id, 2, 1, 0)
+    write_message(message, theme.id, 1, 2, 0)
     print('new message')
+    #sbot.send_message(message.chat.id, message.id)
+
 
 
 
 
 
 if __name__ == "__main__":
-    #try:
+    scheduler_thread = threading.Thread(target=run_scheduler_teacher)
+    scheduler_thread.daemon = True
+    scheduler_thread.start()
+
+# bot_thread  = threading.Thread(target=bot_polling)
+# bot_thread .daemon = True
+# bot_thread .start()
+
+# while True:
+#     pass
+#try:
     tbot.polling(none_stop=True)
     #except Exception as e:
     #    print(e)

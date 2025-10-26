@@ -64,11 +64,11 @@ def add_message(theme_id, sender, receiver, content, msg_type, comand=0):
     content
     {"": "", "":{"": ""}}
 
-    comand
-    #0 - message, 1 - new theme, 2 - turn off
-
     msg_type
     #0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio
+
+    comand
+    #0 - message, 1 - new theme, 2 - turn off
     '''
     with db_session() as session:  # Автоматический remove() при выходе
         new_message = Message(
@@ -77,7 +77,8 @@ def add_message(theme_id, sender, receiver, content, msg_type, comand=0):
             receiver = receiver,
             content = content,
             comand = comand,
-            msg_type = msg_type
+            msg_type = msg_type,
+            send_time = datetime.now()
         )
         session.add(new_message)
         try:

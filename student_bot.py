@@ -9,7 +9,7 @@ sbot = sett.sbot
 create_db_and_tables()
 create_temp_db_and_tables()
 
-
+#def bot_polling():
 @sbot.message_handler(commands=['start'])
 def start(message):
     add_user(message.chat.id, 'Raz', 'Raz', 10)
@@ -22,21 +22,29 @@ def start(message):
 
 @sbot.message_handler(content_types=['text'])
 def message_receiver(message):
+    print('new message', datetime.now())
     theme = select_smth(Theme, (Theme.u_id==message.chat.id) & (Theme.status==1))[0]
     write_message(message, theme.id, 2, 1, 0)
-    print('new message')
+    print('new write message', datetime.now())
     #sbot.send_message(message.chat.id, message.id)
 
 
 
-scheduler_thread = threading.Thread(target=run_scheduler(scheduled_student_task))
-scheduler_thread.daemon = True
-scheduler_thread.start()
+
 
 
 if __name__ == "__main__":
-    print('start')
-    #try:
+    scheduler_thread = threading.Thread(target=run_scheduler_student)
+    scheduler_thread.daemon = True
+    scheduler_thread.start()
+
+# bot_thread  = threading.Thread(target=bot_polling)
+# bot_thread .daemon = True
+# bot_thread .start()
+
+# while True:
+#     pass
+#try:
     sbot.polling(none_stop=True)
     #except Exception as e:
     #    print(e)
