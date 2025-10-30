@@ -39,6 +39,7 @@ class Message(Base):
     send_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), nullable=False)
     comand: Mapped[int] = mapped_column(Integer, nullable=False)#0 - message, 1 - new theme, 2 - close theme, 3 - turn off
     msg_type: Mapped[int] = mapped_column(Integer, nullable=False)#0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio
+    parsed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 #initialization
 def create_temp_db_and_tables():
 	Base.metadata.create_all(engine)
@@ -123,6 +124,9 @@ def update_message(conditions, updates, model=Message, max_rows=None):
             session.rollback()
             log_temp_error(ex)
             return False
+        
+def set_message_as_sended(id):
+    update_message(Message.id == id, {'parsed': True})
 
 #dels
 def del_message(message_id):

@@ -22,10 +22,10 @@ def start(message):
 
 @sbot.message_handler(content_types=['text'])
 def message_receiver(message):
-    print('new message', datetime.now())
+    #print('new message', datetime.now())
     theme = select_smth(Theme, (Theme.u_id==message.chat.id) & (Theme.status==1))[0]
     write_message(message, theme.id, 2, 1, 0)
-    print('new write message', datetime.now())
+    #print('new write message', datetime.now())
     #sbot.send_message(message.chat.id, message.id)
 
 

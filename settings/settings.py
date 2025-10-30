@@ -23,3 +23,4 @@ abot = telebot.TeleBot(admin_token)
 tbot = telebot.TeleBot(teacher_token)
 
 delay = 5 #seconds
+taker_delay = delay+10

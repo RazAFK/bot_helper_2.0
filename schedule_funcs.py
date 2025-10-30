@@ -5,7 +5,6 @@ import time, telebot
 from datetime import datetime, timedelta
 from settings import *
 
-
 #bot = telebot.TeleBot('admin_token')
 
 #add_message(123, 1, 2, {"text":{"id":10}})
@@ -28,9 +27,9 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
 
     receiver: 0 - admin, 1 - teacher, 2 - student
     '''
-    messages = select_message((Message.receiver==receiver) & (Message.send_time>=(datetime.now() - timedelta(seconds=(delay)))))
-    print(datetime.now() - timedelta(seconds=delay))
-    print(messages)
+    messages = select_message((Message.receiver==receiver) & (Message.send_time>=(datetime.now() - timedelta(seconds=(taker_delay)))) & (Message.parsed == False))
+    #print(datetime.now() - timedelta(seconds=delay))
+    #print(messages)
     if not(messages):
         return True
     for message in messages:
@@ -65,6 +64,7 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
                         #creply = message.content['text']['reply'] - theme.t_raito + theme.u_raito
                         #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
                         bot.send_message(theme.u_id, message.content['text'])
+        set_message_as_sended(message.id)
 
 
 def run_scheduler_student():
@@ -99,7 +99,7 @@ def run_scheduler_admin():
 
 
 
-def write_message(message, theme_id, sender, receiver, comand=0):
+def write_message(message: telebot.types.Message, theme_id, sender, receiver, comand=0):
     '''
     Преобразование message из телеграм в строку таблицы temp
 
