@@ -15,7 +15,6 @@ def start(message):
 def message_receiver(message):
     theme = select_smth(Theme, (Theme.u_id==message.chat.id) & (Theme.status==1))[0]
     write_message(message, theme.id, 1, 2, 0)
-    print('new message')
     #sbot.send_message(message.chat.id, message.id)
 
 

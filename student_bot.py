@@ -20,13 +20,18 @@ def start(message):
     update_theme_status(theme.id, 1)
     sbot.send_message(message.chat.id, 'Schedule running')
 
-@sbot.message_handler(content_types=['text'])
-def message_receiver(message):
+@sbot.message_handler(content_types=['text', 'photo'])
+def message_receiver(message: telebot.types.Message):
     #print('new message', datetime.now())
     theme = select_smth(Theme, (Theme.u_id==message.chat.id) & (Theme.status==1))[0]
+    #print('catched', message.photo)
     write_message(message, theme.id, 2, 1, 0)
     #print('new write message', datetime.now())
     #sbot.send_message(message.chat.id, message.id)
+
+# @sbot.message_handler(content_types=['photo'])
+# def start(message):
+#     sbot.send_message(message.chat.id, message.photo[0].file_id)
 
 
 

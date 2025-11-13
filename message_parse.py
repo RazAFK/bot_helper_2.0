@@ -520,3 +520,17 @@
  'voice': None,
  'web_app_data': None,
  'write_access_allowed': None}
+
+
+
+{'message_id': 124,
+ 'from': {'id': 1634714523, 'is_bot': False, 'first_name': 'Егор', 'last_name': 'Белобородов', 'username': 'RazeManer', 'language_code': 'ru'},
+ 'chat': {'id': 1634714523, 'first_name': 'Егор', 'last_name': 'Белобородов', 'username': 'RazeManer', 'type': 'private'},
+ 'date': 1763021141,
+ 'photo': [
+    {'file_id': 'AgACAgIAAxkBAANxaRWQuXlJwk2O9lfZAWNYvjYv400AAmYOaxuf7alIbfLkVh4eQl0BAAMCAANzAAM2BA', 'file_unique_id': 'AQADZg5rG5_tqUh4', 'file_size': 1599, 'width': 51, 'height': 90},
+    {'file_id': 'AgACAgIAAxkBAANxaRWQuXlJwk2O9lfZAWNYvjYv400AAmYOaxuf7alIbfLkVh4eQl0BAAMCAANtAAM2BA', 'file_unique_id': 'AQADZg5rG5_tqUhy', 'file_size': 18718, 'width': 180, 'height': 320},
+    {'file_id': 'AgACAgIAAxkBAANxaRWQuXlJwk2O9lfZAWNYvjYv400AAmYOaxuf7alIbfLkVh4eQl0BAAMCAAN4AAM2BA', 'file_unique_id': 'AQADZg5rG5_tqUh9', 'file_size': 64871, 'width': 450, 'height': 800},
+    {'file_id': 'AgACAgIAAxkBAANxaRWQuXlJwk2O9lfZAWNYvjYv400AAmYOaxuf7alIbfLkVh4eQl0BAAMCAAN5AAM2BA', 'file_unique_id': 'AQADZg5rG5_tqUh-', 'file_size': 109511, 'width': 720, 'height': 1280}
+    ]
+}

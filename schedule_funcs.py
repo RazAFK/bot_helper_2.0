@@ -4,12 +4,17 @@ from db import *
 import time, telebot
 from datetime import datetime, timedelta
 from settings import *
+from enum import Enum
+from telebot.types import InputMediaPhoto, InputMediaDocument
 
-#bot = telebot.TeleBot('admin_token')
-
-#add_message(123, 1, 2, {"text":{"id":10}})
-#print(datetime.now(tz=timezone.utc))
-#print(select_message(Message.send_time>=(datetime.now() - timedelta(seconds=30)))[0].id)
+class DataKeys:
+    class Root:
+        Text = 'text' #text has only text and nothing else
+        Photo = 'photo'
+    class Photo:
+        caption = 'caption'
+        number_of_photos = 'number_of_photos'
+        photos_ids = 'photos_ids'
 
 
 def scheduled_admin_task():
@@ -57,13 +62,28 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
                         bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
                 elif message.msg_type == 1:
                     if receiver == 1:
-                        # creply = message.content['text']['reply'] - theme.u_raito + theme.t_raito
-                        # bot.send_message(theme.t_id, message.content['text']['text'], reply_to_message_id=creply)
-                        bot.send_message(theme.t_id, message.content['text'])
+                        # creply = message.content[MP.TEXT]['reply'] - theme.u_raito + theme.t_raito
+                        # bot.send_message(theme.t_id, message.content[MP.TEXT][MP.TEXT], reply_to_message_id=creply)
+                        bot.send_message(theme.t_id, message.content[DataKeys.Root.Text])
                     else:
-                        #creply = message.content['text']['reply'] - theme.t_raito + theme.u_raito
+                        #creply = message.content[MP.TEXT]['reply'] - theme.t_raito + theme.u_raito
                         #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
-                        bot.send_message(theme.u_id, message.content['text'])
+                        bot.send_message(theme.u_id, message.content[DataKeys.Root.Text])
+                elif message.msg_type == 2:
+                    photos = [InputMediaPhoto(message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids][0], caption=message.content[DataKeys.Root.Photo][DataKeys.Photo.caption])]
+                    if message.content[DataKeys.Root.Photo][DataKeys.Photo.number_of_photos]>1:
+                        for photo_id in message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids][1:]:
+                            photos.append(InputMediaPhoto(photo_id))
+                    if receiver == 1:
+                        # creply = message.content[MP.TEXT]['reply'] - theme.u_raito + theme.t_raito
+                        # bot.send_message(theme.t_id, message.content[MP.TEXT][MP.TEXT], reply_to_message_id=creply)
+                        bot.send_media_group(theme.t_id, photos)
+                    else:
+                        #creply = message.content[MP.TEXT]['reply'] - theme.t_raito + theme.u_raito
+                        #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
+                        bot.send_media_group(theme.u_id, photos)
+                elif message.msg_type == 3:
+                    pass
         set_message_as_sended(message.id)
 
 
@@ -109,8 +129,22 @@ def write_message(message: telebot.types.Message, theme_id, sender, receiver, co
     '''
     content = {}
     if message.text!=None:
-        content['text'] = message.text
+        content[DataKeys.Root.Text] = message.text
         msg_type = 1
     elif message.photo!=None:
-        pass
-    add_message(theme_id, sender, receiver, content, msg_type, comand)
+        media_group_id = message.media_group_id
+        same_media_group_message = select_message(Message.media_group_id == media_group_id)
+        photo = message.photo[-1]
+        if len(same_media_group_message)>0:
+            msg = same_media_group_message[0]
+            content = msg.content
+        else:
+            caption = message.caption
+            number_of_photos = 0
+            content[DataKeys.Root.Photo] = {DataKeys.Photo.caption: caption, DataKeys.Photo.number_of_photos: number_of_photos, DataKeys.Photo.photos_ids: []}
+        content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids].append(photo.file_id)
+        content[DataKeys.Root.Photo][DataKeys.Photo.number_of_photos] += 1
+        msg_type = 2
+    else:
+        msg_type = 0
+    add_message(theme_id, sender, receiver, content, msg_type, media_group_id, comand)

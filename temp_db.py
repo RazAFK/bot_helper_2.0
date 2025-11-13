@@ -40,6 +40,7 @@ class Message(Base):
     comand: Mapped[int] = mapped_column(Integer, nullable=False)#0 - message, 1 - new theme, 2 - close theme, 3 - turn off
     msg_type: Mapped[int] = mapped_column(Integer, nullable=False)#0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio
     parsed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    media_group_id: Mapped[int] = mapped_column(Integer, default=None, nullable=False, unique=True)
 #initialization
 def create_temp_db_and_tables():
 	Base.metadata.create_all(engine)
@@ -57,7 +58,7 @@ def db_session():
         Session.remove()
       
 #adds(inserts)
-def add_message(theme_id, sender, receiver, content, msg_type, comand=0):
+def add_message(theme_id, sender, receiver, content, msg_type, media_group_id, comand=0):
     '''
     sender/receiver
     0 - admin, 1 - teacher, 2 - student
@@ -79,7 +80,8 @@ def add_message(theme_id, sender, receiver, content, msg_type, comand=0):
             content = content,
             comand = comand,
             msg_type = msg_type,
-            send_time = datetime.now()
+            send_time = datetime.now(),
+            media_group_id = media_group_id
         )
         session.add(new_message)
         try:
