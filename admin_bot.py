@@ -37,7 +37,9 @@ def start(message):
 
 @abot.message_handler(content_types=['photo'])
 def start(message: telebot.types.Message):
-    print(message.caption)
+    # downloaded_file = abot.download_file(abot.get_file(message.photo[-1].file_id).file_path)
+    # with open('photo.jpg', 'wb') as file:
+    #     file.write(downloaded_file)
     # for photo in photos:
     #     abot.send_message(message.chat.id, f'{photo.file_id}')
     #     abot.send_photo(message.chat.id, photo.file_id)

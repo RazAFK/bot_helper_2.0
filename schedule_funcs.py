@@ -128,6 +128,7 @@ def write_message(message: telebot.types.Message, theme_id, sender, receiver, co
     comand: 0 - message, 1 - new theme, 2 - close theme, 3 - turn off
     '''
     content = {}
+    media_group_id = None
     if message.text!=None:
         content[DataKeys.Root.Text] = message.text
         msg_type = 1
