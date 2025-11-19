@@ -168,3 +168,10 @@ def select_message(conditions, model=Message):
             session.rollback()
             log_temp_error(ex)
             return False
+        
+
+def is_media_group_exist(media_group_id):
+    messages = select_message((Message.media_group_id == media_group_id) & (Message.media_group_id != None))
+    if type(messages)==list and len(messages)>0:
+        return True
+    return False

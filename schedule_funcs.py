@@ -70,18 +70,19 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
                         #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
                         bot.send_message(theme.u_id, message.content[DataKeys.Root.Text])
                 elif message.msg_type == 2:
-                    photos = [InputMediaPhoto(message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids][0], caption=message.content[DataKeys.Root.Photo][DataKeys.Photo.caption])]
-                    if message.content[DataKeys.Root.Photo][DataKeys.Photo.number_of_photos]>1:
-                        for photo_id in message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids][1:]:
-                            photos.append(InputMediaPhoto(photo_id))
-                    if receiver == 1:
-                        # creply = message.content[MP.TEXT]['reply'] - theme.u_raito + theme.t_raito
-                        # bot.send_message(theme.t_id, message.content[MP.TEXT][MP.TEXT], reply_to_message_id=creply)
-                        bot.send_media_group(theme.t_id, photos)
-                    else:
-                        #creply = message.content[MP.TEXT]['reply'] - theme.t_raito + theme.u_raito
-                        #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
-                        bot.send_media_group(theme.u_id, photos)
+                    # photos = [InputMediaPhoto(message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids][0], caption=message.content[DataKeys.Root.Photo][DataKeys.Photo.caption])]
+                    # if message.content[DataKeys.Root.Photo][DataKeys.Photo.number_of_photos]>1:
+                    #     for photo_id in message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids][1:]:
+                    #         photos.append(InputMediaPhoto(photo_id))
+                    # if receiver == 1:
+                    #     # creply = message.content[MP.TEXT]['reply'] - theme.u_raito + theme.t_raito
+                    #     # bot.send_message(theme.t_id, message.content[MP.TEXT][MP.TEXT], reply_to_message_id=creply)
+                    #     bot.send_media_group(theme.t_id, photos)
+                    # else:
+                    #     #creply = message.content[MP.TEXT]['reply'] - theme.t_raito + theme.u_raito
+                    #     #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
+                    #     bot.send_media_group(theme.u_id, photos)
+                    print(*message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids], sep='\n')
                 elif message.msg_type == 3:
                     pass
         set_message_as_sended(message.id)
@@ -148,4 +149,8 @@ def write_message(message: telebot.types.Message, theme_id, sender, receiver, co
         msg_type = 2
     else:
         msg_type = 0
-    add_message(theme_id, sender, receiver, content, msg_type, media_group_id, comand)
+    
+    if is_media_group_exist(media_group_id):
+        update_message((Message.media_group_id == media_group_id), {'content': content})
+    else:
+        add_message(theme_id, sender, receiver, content, msg_type, media_group_id, comand)

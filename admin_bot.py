@@ -35,15 +35,18 @@ def start(message):
     abot.send_message(message.chat.id, 'file')
     pprint.pprint(vars(message))
 
+
+photo_group = {}
 @abot.message_handler(content_types=['photo'])
 def start(message: telebot.types.Message):
-    # downloaded_file = abot.download_file(abot.get_file(message.photo[-1].file_id).file_path)
-    # with open('photo.jpg', 'wb') as file:
-    #     file.write(downloaded_file)
-    # for photo in photos:
-    #     abot.send_message(message.chat.id, f'{photo.file_id}')
-    #     abot.send_photo(message.chat.id, photo.file_id)
-    print(message.photo[0].file_id)
+    photo = message.photo[-1]
+    if message.media_group_id != None:
+        if message.media_group_id in photo_group:
+            photo_group[message.media_group_id].append(InputMediaPhoto(photo.file_id))
+        else:
+            photo_group[message.media_group_id] = [InputMediaPhoto(photo.file_id, message.media_group_id)]
+    print(photo_group)
+        
 
 @abot.message_handler(commands=['senddocumen'])
 def start(message):
@@ -54,14 +57,12 @@ def start(message):
 
 @abot.message_handler(commands=['sendphoto'])
 def start(message):
-    photos = [{'file_id': 'AgACAgIAAxkBAANxaRWQuXlJwk2O9lfZAWNYvjYv400AAmYOaxuf7alIbfLkVh4eQl0BAAMCAANzAAM2BA', 'file_unique_id': 'AQADZg5rG5_tqUh4', 'file_size': 1599, 'width': 51, 'height': 90},
-    {'file_id': 'AgACAgIAAxkBAANxaRWQuXlJwk2O9lfZAWNYvjYv400AAmYOaxuf7alIbfLkVh4eQl0BAAMCAANtAAM2BA', 'file_unique_id': 'AQADZg5rG5_tqUhy', 'file_size': 18718, 'width': 180, 'height': 320},
-    {'file_id': 'AgACAgIAAxkBAANxaRWQuXlJwk2O9lfZAWNYvjYv400AAmYOaxuf7alIbfLkVh4eQl0BAAMCAAN4AAM2BA', 'file_unique_id': 'AQADZg5rG5_tqUh9', 'file_size': 64871, 'width': 450, 'height': 800},
-    {'file_id': 'AgACAgIAAxkBAANxaRWQuXlJwk2O9lfZAWNYvjYv400AAmYOaxuf7alIbfLkVh4eQl0BAAMCAAN5AAM2BA', 'file_unique_id': 'AQADZg5rG5_tqUh-', 'file_size': 109511, 'width': 720, 'height': 1280}]
-    for photo in photos:
-        abot.send_message(message.chat.id, f'{photo['file_id']}\nnexe\n{photo['file_unique_id']}')
-        abot.send_photo(message.chat.id, photo['file_id'])
-        abot.send_photo(message.chat.id, photo['file_unique_id'])
+    for key, value in photo_group.items():
+        print(key, value)
+        try:
+            abot.send_media_group(message.chat.id, value)
+        except:
+            print('error')
 
 
 @abot.message_handler(commands=['sendgroup'])
