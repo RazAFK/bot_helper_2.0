@@ -134,7 +134,7 @@ def write_message(message: telebot.types.Message, theme_id, sender, receiver, co
         msg_type = 1
     elif message.photo!=None:
         media_group_id = message.media_group_id
-        same_media_group_message = select_message(Message.media_group_id == media_group_id)
+        same_media_group_message = select_message((Message.media_group_id == media_group_id) & (Message.media_group_id != None))
         photo = message.photo[-1]
         if len(same_media_group_message)>0:
             msg = same_media_group_message[0]

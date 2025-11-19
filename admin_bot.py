@@ -43,6 +43,7 @@ def start(message: telebot.types.Message):
     # for photo in photos:
     #     abot.send_message(message.chat.id, f'{photo.file_id}')
     #     abot.send_photo(message.chat.id, photo.file_id)
+    print(message.photo[0].file_id)
 
 @abot.message_handler(commands=['senddocumen'])
 def start(message):
