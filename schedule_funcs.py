@@ -42,12 +42,14 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
     messages = []
     for msg in msgs:
         message = Parsed_message(msg.id, msg.theme_id, msg.sender, msg.receiver, msg.content_id, msg.caption, msg.send_time, msg.comand, msg.msg_type, msg.parsed, msg.media_group_id)
-        if message not in msgs:
+        if not(message in messages):
             messages.append(message)
         else:
-            messages[messages.index()].add_id(msg.content_id)
+            print('it worked')
+            messages[messages.index(message)].add_id(msg.content_id)
+            
 
-    print(*messages)
+    print(*messages, sep='\n')
 
 
     for message in messages:
@@ -77,11 +79,11 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
                     if receiver == 1:
                         # creply = message.content[MP.TEXT]['reply'] - theme.u_raito + theme.t_raito
                         # bot.send_message(theme.t_id, message.content[MP.TEXT][MP.TEXT], reply_to_message_id=creply)
-                        bot.send_message(theme.t_id, message.content[DataKeys.Root.Text])
+                        bot.send_message(theme.t_id, message.content_ids[0])
                     else:
                         #creply = message.content[MP.TEXT]['reply'] - theme.t_raito + theme.u_raito
                         #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
-                        bot.send_message(theme.u_id, message.content[DataKeys.Root.Text])
+                        bot.send_message(theme.u_id, message.content_ids[0])
                 elif message.msg_type == 2:
                     # photos = [InputMediaPhoto(message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids][0], caption=message.content[DataKeys.Root.Photo][DataKeys.Photo.caption])]
                     # if message.content[DataKeys.Root.Photo][DataKeys.Photo.number_of_photos]>1:
@@ -95,7 +97,7 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
                     #     #creply = message.content[MP.TEXT]['reply'] - theme.t_raito + theme.u_raito
                     #     #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
                     #     bot.send_media_group(theme.u_id, photos)
-                    print(*message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids], sep='\n')
+                    print(*message.content_ids, sep='\n')
                 elif message.msg_type == 3:
                     pass
         set_message_as_sended(message.id)
