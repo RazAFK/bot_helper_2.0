@@ -35,7 +35,8 @@ class Message(Base):
     theme_id: Mapped[int] = mapped_column(Integer, nullable=False)
     sender: Mapped[int] = mapped_column(Integer, nullable=False)#0 - admin, 1 - teacher, 2 - student
     receiver: Mapped[int] = mapped_column(Integer, nullable=False)#0 - admin, 1 - teacher, 2 - student
-    content: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+    content_id: Mapped[str] = mapped_column(String, nullable=False)# text will be here
+    caption: Mapped[str] = mapped_column(String, nullable=True)
     send_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), nullable=False)
     comand: Mapped[int] = mapped_column(Integer, nullable=False)#0 - message, 1 - new theme, 2 - close theme, 3 - turn off
     msg_type: Mapped[int] = mapped_column(Integer, nullable=False)#0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio
@@ -58,13 +59,10 @@ def db_session():
         Session.remove()
       
 #adds(inserts)
-def add_message(theme_id, sender, receiver, content, msg_type, media_group_id, comand=0):
+def add_message(theme_id, sender, receiver, content_id, caption, msg_type, media_group_id, comand=0):
     '''
     sender/receiver
     0 - admin, 1 - teacher, 2 - student
-
-    content
-    {"": "", "":{"": ""}}
 
     msg_type
     #0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio
@@ -77,7 +75,8 @@ def add_message(theme_id, sender, receiver, content, msg_type, media_group_id, c
             theme_id = theme_id,
             sender = sender,
             receiver = receiver,
-            content = content,
+            content_id = content_id,
+            caption = caption,
             comand = comand,
             msg_type = msg_type,
             send_time = datetime.now(),
@@ -168,10 +167,3 @@ def select_message(conditions, model=Message):
             session.rollback()
             log_temp_error(ex)
             return False
-        
-
-def is_media_group_exist(media_group_id):
-    messages = select_message((Message.media_group_id == media_group_id) & (Message.media_group_id != None))
-    if type(messages)==list and len(messages)>0:
-        return True
-    return False

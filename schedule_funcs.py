@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from settings import *
 from enum import Enum
 from telebot.types import InputMediaPhoto, InputMediaDocument
+from message_class import Parsed_message
 
 class DataKeys:
     class Root:
@@ -32,11 +33,23 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
 
     receiver: 0 - admin, 1 - teacher, 2 - student
     '''
-    messages = select_message((Message.receiver==receiver) & (Message.send_time>=(datetime.now() - timedelta(seconds=(taker_delay)))) & (Message.parsed == False))
+    msgs = select_message((Message.receiver==receiver) & (Message.send_time>=(datetime.now() - timedelta(seconds=(taker_delay)))) & (Message.parsed == False))
     #print(datetime.now() - timedelta(seconds=delay))
     #print(messages)
-    if not(messages):
+    if not(msgs):
         return True
+    
+    messages = []
+    for msg in msgs:
+        message = Parsed_message(msg.id, msg.theme_id, msg.sender, msg.receiver, msg.content_id, msg.caption, msg.send_time, msg.comand, msg.msg_type, msg.parsed, msg.media_group_id)
+        if message not in msgs:
+            messages.append(message)
+        else:
+            messages[messages.index()].add_id(msg.content_id)
+
+    print(*messages)
+
+
     for message in messages:
         if message.comand != 3:
             theme = select_smth(Theme, (Theme.id == message.theme_id))
@@ -128,29 +141,16 @@ def write_message(message: telebot.types.Message, theme_id, sender, receiver, co
     receiver: 0 - admin, 1 - teacher, 2 - student\n
     comand: 0 - message, 1 - new theme, 2 - close theme, 3 - turn off
     '''
-    content = {}
     media_group_id = None
     if message.text!=None:
-        content[DataKeys.Root.Text] = message.text
+        content_id = message.text
         msg_type = 1
     elif message.photo!=None:
         media_group_id = message.media_group_id
-        same_media_group_message = select_message((Message.media_group_id == media_group_id) & (Message.media_group_id != None))
-        photo = message.photo[-1]
-        if len(same_media_group_message)>0:
-            msg = same_media_group_message[0]
-            content = msg.content
-        else:
-            caption = message.caption
-            number_of_photos = 0
-            content[DataKeys.Root.Photo] = {DataKeys.Photo.caption: caption, DataKeys.Photo.number_of_photos: number_of_photos, DataKeys.Photo.photos_ids: []}
-        content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids].append(photo.file_id)
-        content[DataKeys.Root.Photo][DataKeys.Photo.number_of_photos] += 1
+        content_id = message.photo[-1].file_id
+        caption = message.caption
         msg_type = 2
     else:
         msg_type = 0
     
-    if is_media_group_exist(media_group_id):
-        update_message((Message.media_group_id == media_group_id), {'content': content})
-    else:
-        add_message(theme_id, sender, receiver, content, msg_type, media_group_id, comand)
+    add_message(theme_id, sender, receiver, content_id, caption, msg_type, media_group_id, comand)
