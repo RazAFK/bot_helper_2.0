@@ -25,7 +25,7 @@ def message_receiver(message: telebot.types.Message):
     #print('new message', datetime.now())
     theme = select_smth(Theme, (Theme.u_id==message.chat.id) & (Theme.status==1))[0]
     #print('catched', message.photo)
-    write_message(message, theme.id, 2, 1, 0)
+    write_message(message, theme.id, 2, 1, sbot, 0)
     #print('new write message', datetime.now())
     #sbot.send_message(message.chat.id, message.id)
 

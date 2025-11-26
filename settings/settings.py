@@ -22,5 +22,8 @@ sbot = telebot.TeleBot(student_token)
 abot = telebot.TeleBot(admin_token)
 tbot = telebot.TeleBot(teacher_token)
 
+senders = {0: 'abot', 1: 'tbot', 2: 'sbot'}
+data_folder = 'data_stash'
+
 delay = 5 #seconds
-taker_delay = delay+10
+taker_delay = delay+20

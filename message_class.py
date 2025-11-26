@@ -13,7 +13,7 @@ class Parsed_message:
         self.media_group_id = media_group_id
     
     def __eq__(self, media_group_id):
-        return self.media_group_id!=None and self.media_group_id == media_group_id
+        return self.media_group_id != None and self.media_group_id == media_group_id
     
     def __str__(self):
         return f'{self.id, self.theme_id, self.sender, self.receiver, len(self.content_ids), self.caption, self.media_group_id}'

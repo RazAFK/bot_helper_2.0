@@ -7,6 +7,7 @@ from settings import *
 from enum import Enum
 from telebot.types import InputMediaPhoto, InputMediaDocument
 from message_class import Parsed_message
+import os
 
 class DataKeys:
     class Root:
@@ -45,11 +46,11 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
         if not(message in messages):
             messages.append(message)
         else:
-            print('it worked')
             messages[messages.index(message)].add_id(msg.content_id)
+            set_message_as_sended(msg.id)
             
 
-    print(*messages, sep='\n')
+    #print(*messages, sep='\n')
 
 
     for message in messages:
@@ -85,19 +86,19 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
                         #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
                         bot.send_message(theme.u_id, message.content_ids[0])
                 elif message.msg_type == 2:
-                    # photos = [InputMediaPhoto(message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids][0], caption=message.content[DataKeys.Root.Photo][DataKeys.Photo.caption])]
-                    # if message.content[DataKeys.Root.Photo][DataKeys.Photo.number_of_photos]>1:
-                    #     for photo_id in message.content[DataKeys.Root.Photo][DataKeys.Photo.photos_ids][1:]:
-                    #         photos.append(InputMediaPhoto(photo_id))
-                    # if receiver == 1:
-                    #     # creply = message.content[MP.TEXT]['reply'] - theme.u_raito + theme.t_raito
-                    #     # bot.send_message(theme.t_id, message.content[MP.TEXT][MP.TEXT], reply_to_message_id=creply)
-                    #     bot.send_media_group(theme.t_id, photos)
-                    # else:
-                    #     #creply = message.content[MP.TEXT]['reply'] - theme.t_raito + theme.u_raito
-                    #     #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
-                    #     bot.send_media_group(theme.u_id, photos)
-                    print(*message.content_ids, sep='\n')
+                    photos = [InputMediaPhoto(load_file(message.content_ids[0], message.sender), caption=message.caption)]
+                    if len(message.content_ids)>1:
+                        for photo_id in message.content_ids[1:]:
+                            photos.append(InputMediaPhoto(load_file(photo_id, message.sender)))
+                    if receiver == 1:
+                        # creply = message.content[MP.TEXT]['reply'] - theme.u_raito + theme.t_raito
+                        # bot.send_message(theme.t_id, message.content[MP.TEXT][MP.TEXT], reply_to_message_id=creply)
+                        bot.send_media_group(theme.t_id, photos)
+                    else:
+                        #creply = message.content[MP.TEXT]['reply'] - theme.t_raito + theme.u_raito
+                        #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
+                        bot.send_media_group(theme.u_id, photos)
+                    #print(*message.content_ids, sep='\n')
                 elif message.msg_type == 3:
                     pass
         set_message_as_sended(message.id)
@@ -134,8 +135,32 @@ def run_scheduler_admin():
         time.sleep(1)
 
 
+def save_file(file_id, bot: telebot.TeleBot, sender):
+    data_sender_path = os.path.join(data_folder, senders[sender])
+    os.makedirs(data_sender_path, exist_ok=True)
+    file_info = bot.get_file(file_id)
+    dwld_file = bot.download_file(file_info.file_path)
+    file_path = os.path.join(data_sender_path, file_id)
+    try:
+        with open(file_path, 'wb') as file:
+            file.write(dwld_file)
+        log_temp(f'new data_file: {file_id} from {senders[sender]}')
+        return True
+    except Exception as e:
+        log_temp_error(e)
+        return False
 
-def write_message(message: telebot.types.Message, theme_id, sender, receiver, comand=0):
+def load_file(file_id, sender):
+    data_sender_path = os.path.join(data_folder, senders[sender])
+    file_path = os.path.join(data_sender_path, file_id)
+    try:
+        with open(file_path, 'rb') as file:
+            return file.read()
+    except Exception as e:
+        log_temp_error(e)
+        return False
+
+def write_message(message: telebot.types.Message, theme_id, sender, receiver, bot: telebot.TeleBot, comand=0):
     '''
     Преобразование message из телеграм в строку таблицы temp
 
@@ -151,8 +176,12 @@ def write_message(message: telebot.types.Message, theme_id, sender, receiver, co
         media_group_id = message.media_group_id
         content_id = message.photo[-1].file_id
         caption = message.caption
-        msg_type = 2
+        if save_file(content_id, bot, sender):
+            msg_type = 2
+        else:
+            content_id = 'Error while saving file'
+            msg_type = 1
     else:
+        content_id = 'None type message'
         msg_type = 0
-    
     add_message(theme_id, sender, receiver, content_id, caption, msg_type, media_group_id, comand)
