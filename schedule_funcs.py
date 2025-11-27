@@ -4,19 +4,19 @@ from db import *
 import time, telebot
 from datetime import datetime, timedelta
 from settings import *
+from settings.constants import msg_const
 from enum import Enum
-from telebot.types import InputMediaPhoto, InputMediaDocument
+from telebot.types import InputMediaPhoto, InputMediaDocument, InputMedia, InputMediaAudio, InputMediaVideo, InputMediaAnimation
 from message_class import Parsed_message
 import os
-
-class DataKeys:
-    class Root:
-        Text = 'text' #text has only text and nothing else
-        Photo = 'photo'
-    class Photo:
-        caption = 'caption'
-        number_of_photos = 'number_of_photos'
-        photos_ids = 'photos_ids'
+# class DataKeys:
+#     class Root:
+#         Text = 'text' #text has only text and nothing else
+#         Photo = 'photo'
+#     class Photo:
+#         caption = 'caption'
+#         number_of_photos = 'number_of_photos'
+#         photos_ids = 'photos_ids'
 
 
 def scheduled_admin_task():
@@ -46,6 +46,8 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
         if not(message in messages):
             messages.append(message)
         else:
+            if messages[messages.index(message)].msg_type != msg.msg_type:  
+                messages[messages.index(message)].msg_type = msg_const.types.different
             messages[messages.index(message)].add_id(msg.content_id)
             set_message_as_sended(msg.id)
             
@@ -59,25 +61,25 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
             #print(theme)
             if not(theme): continue
             theme = theme[0]
-            if message.comand == 1:
+            if message.comand == msg_const.comands.new_theme:
                 uraito = bot.send_message(theme.u_id, 'Вы начали диалог').message_id()
                 rows_update(Theme, Theme.id == message.theme_id, {'u_raito': uraito, 'status': 1})
-            elif message.comand == 2:
-                if receiver == 1:
+            elif message.comand == msg_const.comands.close_theme:
+                if receiver == msg_const.receivers.teacher:
                     bot.send_message(theme.t_id, 'Вы завершили диалог')
                     bot.send_message(theme.u_id, 'Собеседник завершил диалог')
                 else:
                     bot.send_message(theme.u_id, 'Вы завершили диалог')
                     bot.send_message(theme.t_id, 'Собеседник завершил диалог')
                 rows_update(Theme, Theme.id == message.theme_id, {'status': 2})
-            elif message.comand == 0:
-                if message.msg_type == 0:
-                    if receiver == 1:
+            elif message.comand == msg_const.comands.message:
+                if message.msg_type == msg_const.types.undefind:
+                    if receiver == msg_const.receivers.teacher:
                         bot.send_message(theme.t_id, 'Собеседник отправил сообщение которое не может быть переслано')
                     else:
                         bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
-                elif message.msg_type == 1:
-                    if receiver == 1:
+                elif message.msg_type == msg_const.types.text:
+                    if receiver == msg_const.receivers.teacher:
                         # creply = message.content[MP.TEXT]['reply'] - theme.u_raito + theme.t_raito
                         # bot.send_message(theme.t_id, message.content[MP.TEXT][MP.TEXT], reply_to_message_id=creply)
                         bot.send_message(theme.t_id, message.content_ids[0])
@@ -85,12 +87,9 @@ def scheduled_task(bot: telebot.TeleBot, receiver):
                         #creply = message.content[MP.TEXT]['reply'] - theme.t_raito + theme.u_raito
                         #bot.send_message(theme.u_id, 'Собеседник отправил сообщение которое не может быть переслано')
                         bot.send_message(theme.u_id, message.content_ids[0])
-                elif message.msg_type == 2:
-                    photos = [InputMediaPhoto(load_file(message.content_ids[0], message.sender), caption=message.caption)]
-                    if len(message.content_ids)>1:
-                        for photo_id in message.content_ids[1:]:
-                            photos.append(InputMediaPhoto(load_file(photo_id, message.sender)))
-                    if receiver == 1:
+                elif message.msg_type == msg_const.types.photo:
+                    photos = media_list(message, msg_const.media_types[msg_const.types.photo])
+                    if receiver == msg_const.receivers.teacher:
                         # creply = message.content[MP.TEXT]['reply'] - theme.u_raito + theme.t_raito
                         # bot.send_message(theme.t_id, message.content[MP.TEXT][MP.TEXT], reply_to_message_id=creply)
                         bot.send_media_group(theme.t_id, photos)
@@ -134,6 +133,13 @@ def run_scheduler_admin():
         schedule.run_pending()
         time.sleep(1)
 
+def media_list(message: Parsed_message, Type):
+    photos = [InputMedia(Type, load_file(message.content_ids[0], message.sender), caption=message.caption)]
+    #photos = [InputMediaPhoto(load_file(message.content_ids[0], message.sender), caption=message.caption)]
+    if len(message.content_ids)>1:
+        for photo_id in message.content_ids[1:]:
+            photos.append(InputMedia(Type, load_file(photo_id, message.sender)))
+    return photos
 
 def save_file(file_id, bot: telebot.TeleBot, sender):
     data_sender_path = os.path.join(data_folder, senders[sender])
@@ -171,17 +177,53 @@ def write_message(message: telebot.types.Message, theme_id, sender, receiver, bo
     media_group_id = None
     if message.text!=None:
         content_id = message.text
-        msg_type = 1
+        msg_type = msg_const.types.text
     elif message.photo!=None:
         media_group_id = message.media_group_id
         content_id = message.photo[-1].file_id
         caption = message.caption
         if save_file(content_id, bot, sender):
-            msg_type = 2
+            msg_type = msg_const.types.photo
         else:
-            content_id = 'Error while saving file'
-            msg_type = 1
+            content_id = 'Error during saving file'
+            msg_type = msg_const.types.text
+    elif message.document!=None:
+        media_group_id = message.media_group_id
+        content_id = message.document[-1].file_id
+        caption = message.caption
+        if save_file(content_id, bot, sender):
+            msg_type = msg_const.types.document
+        else:
+            content_id = 'Error during saving file'
+            msg_type = msg_const.types.text
+    elif message.voice!=None:
+        media_group_id = message.media_group_id
+        content_id = message.voice[-1].file_id
+        caption = message.caption
+        if save_file(content_id, bot, sender):
+            msg_type = msg_const.types.voice
+        else:
+            content_id = 'Error during saving file'
+            msg_type = msg_const.types.text
+    elif message.video!=None:
+        media_group_id = message.media_group_id
+        content_id = message.video[-1].file_id
+        caption = message.caption
+        if save_file(content_id, bot, sender):
+            msg_type = msg_const.types.video
+        else:
+            content_id = 'Error during saving file'
+            msg_type = msg_const.types.text
+    elif message.audio!=None:
+        media_group_id = message.media_group_id
+        content_id = message.audio[-1].file_id
+        caption = message.caption
+        if save_file(content_id, bot, sender):
+            msg_type = msg_const.types.audio
+        else:
+            content_id = 'Error during saving file'
+            msg_type = msg_const.types.text
     else:
         content_id = 'None type message'
-        msg_type = 0
+        msg_type = msg_const.types.undefind
     add_message(theme_id, sender, receiver, content_id, caption, msg_type, media_group_id, comand)

@@ -1,4 +1,5 @@
 class Parsed_message:
+
     def __init__(self, id: int, theme_id: int, sender: int, receiver: int, content_id: list, caption: str, send_time, comand: int, msg_type: int, parsed: bool, media_group_id: int):
         self.id = id
         self.theme_id = theme_id

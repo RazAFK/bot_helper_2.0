@@ -39,7 +39,7 @@ class Message(Base):
     caption: Mapped[str] = mapped_column(String, nullable=True)
     send_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), nullable=False)
     comand: Mapped[int] = mapped_column(Integer, nullable=False)#0 - message, 1 - new theme, 2 - close theme, 3 - turn off
-    msg_type: Mapped[int] = mapped_column(Integer, nullable=False)#0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio
+    msg_type: Mapped[int] = mapped_column(Integer, nullable=False)#0 - undefind, 1 - text, 2 - photo, 3 - document, 4 - voice, 5 - video, 6 - audio, 7 - different, 8 - gif
     parsed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     media_group_id: Mapped[int] = mapped_column(Integer, default=None, nullable=True)
 #initialization
